@@ -1,95 +1,93 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+"use client";
+import { useState, useEffect } from 'react';
+import * as tf from '@tensorflow/tfjs';
+import '@tensorflow/tfjs-backend-cpu';
+import '@tensorflow/tfjs-backend-webgl';
+import './card.css';
+import Link from 'next/link';
+
 
 export default function Home() {
+  const [model, setModel] = useState(null);
+  const [image, setImage] = useState(null);
+  const [prediction, setPrediction] = useState(null);
+
+  // Cargar el modelo al montar el componente
+  useEffect(() => {
+    async function loadModel() {
+      const modelUrl = `${window.location.origin}/model/model.json`;
+      const model = await tf.loadLayersModel(modelUrl);
+      setModel(model);
+      console.log('Modelo cargado');
+    }
+    loadModel();
+  }, []);
+
+  const handleImageUpload = (event) => {
+    const file = event.target.files[0];
+    if (file) {  // Verifica que file no sea undefined
+      const reader = new FileReader();
+      reader.onload = () => {
+        setImage(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const classifyImage = async () => {
+    if (!model || !image) return;
+  
+    const imgElement = document.createElement('img');
+    imgElement.src = image;
+    imgElement.onload = () => {
+      const tensor = tf.browser.fromPixels(imgElement)
+        .resizeNearestNeighbor([150, 150])  // Cambia el tamaño a 150x150
+        .toFloat()
+        .expandDims();
+      const prediction = model.predict(tensor);
+      prediction.array().then(result => {
+        setPrediction(result);
+        console.log(result);
+      });
+    };
+  };
+
+  const getResult = () => {
+    if (prediction) {
+      if (JSON.stringify(prediction) === JSON.stringify([[0, 1]])) {
+        return "Cat";
+      } else if (JSON.stringify(prediction) === JSON.stringify([[1, 0]])) {
+        return "Dog";
+      } else {
+        return "Unknown";
+      }
+    }
+    return "";
+  };
   return (
-    <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>src/app/page.js</code>
-        </p>
-        <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
+    <div>
+      <h1>Cat and Dog Image Classifier</h1>
+      <div className="e-card playing">
+        <div className="wave"></div>
+
+        <div className="infotop">
+        <input type="file" accept="image/*" onChange={handleImageUpload} />
+        {image && <img src={image} alt="Uploaded" width="224" height="224" />}
+          <br />
+          <button onClick={classifyImage}>Classify</button>
+          {prediction && <div>Result: {getResult()}</div>}
+          <br />
+          
         </div>
+        
+      </div>
+      <div className="project-github">
+        <p>This project is in </p>
+        <Link href="https://github.com/diegoperea20"><img width="96" height="96" src="https://img.icons8.com/fluency/96/github.png" alt="github"/></Link>
+      
       </div>
 
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className={styles.grid}>
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p>Find in-depth information about Next.js features and API.</p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Learn <span>-&gt;</span>
-          </h2>
-          <p>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p>Explore starter templates for Next.js.</p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
+    </div>
+   
   );
 }
