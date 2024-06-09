@@ -41,7 +41,7 @@ export default function Home() {
     imgElement.src = image;
     imgElement.onload = () => {
       const tensor = tf.browser.fromPixels(imgElement)
-        .resizeNearestNeighbor([150, 150])  // Cambia el tamaño a 150x150
+        .resizeNearestNeighbor([128, 128])  // si usas modelo antiguo Cambia el tamaño a 150x150
         .toFloat()
         .expandDims();
       const prediction = model.predict(tensor);
@@ -53,11 +53,11 @@ export default function Home() {
   };
 
   const getResult = () => {
-    if (prediction) {
+    if (prediction) {        //modelo antiguo:https://github.com/diegoperea20/clasificacion_de_imagenes_Tensorflow
       if (JSON.stringify(prediction) === JSON.stringify([[0, 1]])) {
-        return "Cat";
-      } else if (JSON.stringify(prediction) === JSON.stringify([[1, 0]])) {
-        return "Dog";
+        return "Dog";   //Con modelo antiguo return "Cat" 
+      } else if (JSON.stringify(prediction) === JSON.stringify([[1, 0]])) { 
+        return "Cat";   //Con modelo antiguo return "Dog"
       } else {
         return "Unknown";
       }

@@ -83,5 +83,8 @@ Put this code in .eslintrc.json
   "extends": ["next/babel","next/core-web-vitals"]
 }
 ```
+[old model](https://github.com/diegoperea20/clasificacion_de_imagenes_Tensorflow/blob/main/cat_dog_classifier.h5)
+
+[model updated](https://www.kaggle.com/code/sachinpatil1280/cats-vs-dogs-image-classification-using-cnn-95/output) 
 
 Created by [Diego Ivan Perea Montealegre](https://github.com/diegoperea20)
